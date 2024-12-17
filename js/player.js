@@ -5,13 +5,8 @@ class Player {
     this.sprite = scene.physics.add.sprite(x, y, 'player');
     this.sprite.setCollideWorldBounds(true);
 
-    // Health and health text
+    // Health but no text yet - we'll let the UI manager handle that
     this.health = 4;
-    this.healthText = scene.add.text(x, y - 25, this.health, {
-      fontSize: '16px',
-      color: '#ffffff',
-      align: 'center'
-    }).setOrigin(0.5, 0.5);
 
     // WASD input
     this.keys = scene.input.keyboard.addKeys({
@@ -25,6 +20,22 @@ class Player {
     this.scene.input.on('pointerdown', () => {
       this.shootBullet();
     });
+
+    // Store reference to player in sprite for easier access
+    this.sprite.player = this;
+  }
+
+  initHealthText() {
+    // Clean up any existing health text first
+    if (this.healthText) {
+      this.healthText.destroy();
+    }
+    // Create new health text
+    this.healthText = this.scene.add.text(this.sprite.x, this.sprite.y - 25, this.health, {
+      fontSize: '16px',
+      color: '#ffffff',
+      align: 'center'
+    }).setOrigin(0.5, 0.5);
   }
 
   update(time, mousePointer, bullets, lastFired) {
@@ -49,5 +60,26 @@ class Player {
       this.sprite.x, this.sprite.y, mousePointer.worldX, mousePointer.worldY
     );
     Bullet.shoot(this.scene, this.sprite.x, this.sprite.y, angle, bullets);
+  }
+
+  destroy() {
+    // Clean up health text
+    if (this.healthText) {
+      this.healthText.destroy();
+      this.healthText = null;
+    }
+    // Clean up sprite
+    if (this.sprite) {
+      this.sprite.destroy();
+      this.sprite = null;
+    }
+    // Clean up key bindings
+    if (this.keys) {
+      this.scene.input.keyboard.removeKey(this.keys.W);
+      this.scene.input.keyboard.removeKey(this.keys.A);
+      this.scene.input.keyboard.removeKey(this.keys.S);
+      this.scene.input.keyboard.removeKey(this.keys.D);
+      this.keys = null;
+    }
   }
 }

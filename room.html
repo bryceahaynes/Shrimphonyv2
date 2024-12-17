@@ -30,26 +30,46 @@
     }
 
     function create() {
-      // Retrieve query params
+      // Get currency from URL params
       const params = new URLSearchParams(window.location.search);
       currency = parseInt(params.get('currency')) || 0;
 
-      this.add.text(300, 100, 'Blank Room', { fontSize: '32px', fill: '#fff' });
-      this.add.text(300, 200, 'Currency: ' + currency, { fontSize: '20px', fill: '#fff' });
+      // Display room title and currency
+      const roomTitle = this.add.text(300, 100, 'Blank Room', { 
+        fontSize: '32px', 
+        fill: '#fff' 
+      });
+      
+      const currencyText = this.add.text(300, 200, `Currency: ${currency}`, { 
+        fontSize: '20px', 
+        fill: '#fff' 
+      });
 
-      // Add an exit door
+      // Add exit door with enhanced currency passing
       const exitDoor = this.add.sprite(400, 300, 'door').setInteractive();
-      this.add.text(350, 350, 'Exit to Main Scene', { fontSize: '16px', fill: '#fff' });
+      const exitText = this.add.text(350, 350, 'Exit to Main Scene', { 
+        fontSize: '16px', 
+        fill: '#fff' 
+      });
 
       exitDoor.on('pointerdown', () => {
-        // Pass updated currency/upgrades back to the main scene
-        const query = '?currency=' + currency;
-        window.opener.location.href = window.opener.location.pathname + query;
-        window.close();
+        if (window.opener && !window.opener.closed) {
+          // Update the main scene's URL with current currency
+          const query = `?currency=${currency}`;
+          window.opener.history.replaceState({}, '', window.opener.location.pathname + query);
+          
+          // Force main scene to check for updates
+          window.opener.dispatchEvent(new Event('focus'));
+          
+          // Close blank room
+          window.close();
+        }
       });
     }
 
-    function update() {}
+    function update() {
+      // Add any update logic here if needed
+    }
   </script>
   <style>
     body {

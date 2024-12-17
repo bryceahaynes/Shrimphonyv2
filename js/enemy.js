@@ -12,11 +12,18 @@ class Enemy {
       color: '#ff0000',
       align: 'center'
     }).setOrigin(0.5, 0.5);
-    this.sprite.enemy = this; // Attach to sprite for easier access
+    this.sprite.enemy = this;
   }
 
   destroy() {
-    if (this.healthText) this.healthText.destroy();
-    if (this.sprite) this.sprite.destroy();
+    // Make sure to destroy the health text
+    if (this.healthText) {
+      this.healthText.destroy();
+      this.healthText = null;
+    }
+    if (this.sprite) {
+      this.sprite.destroy();
+      this.sprite = null;
+    }
   }
 }
