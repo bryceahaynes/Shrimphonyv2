@@ -24,6 +24,9 @@ let elapsedGameTime = 0; // Track elapsed game time
 let spawnMultiplier = 1; // Controls the number of enemies spawning
 let currency = 0; // Tracks the overall currency
 let currencyText; // Display text for currency
+let door; // Door object to transition to a new scene
+let isBlankRoomOpen = false; // Tracks if the blank room tab is open
+let blankRoomWindow = null; // Stores reference to the blank room window
 
 const game = new Phaser.Game(config);
 
@@ -32,6 +35,7 @@ function preload() {
   this.load.image('player', 'assets/player.png'); // Local player image
   this.load.image('bullet', 'assets/bullet.png'); // Local bullet image
   this.load.image('enemy', 'assets/enemy.png');   // Local enemy image
+  this.load.image('door', 'assets/door.png');     // Door image for transitions
 }
 
 function create() {
@@ -60,6 +64,29 @@ function create() {
   currencyText = this.add.text(16, 16, 'Currency: 0', {
     fontSize: '20px',
     fill: '#ffffff'
+  });
+
+  // Add door to the scene
+  door = this.physics.add.sprite(100, 100, 'door').setInteractive();
+  this.add.text(80, 140, 'Go through the door', { fontSize: '16px', fill: '#ffffff' });
+
+  // Player-door interaction to open new tab with a new room
+  this.physics.add.overlap(player.sprite, door, () => {
+    if (!isBlankRoomOpen) {
+      const query = `?currency=${currency}`;
+      blankRoomWindow = window.open('room.html' + query, '_blank');
+      isBlankRoomOpen = true;
+
+      // Block the main scene while the room tab is open
+      this.add.text(window.innerWidth / 2, window.innerHeight / 2, 'Return to the blank room tab!', {
+        fontSize: '24px',
+        fill: '#ff0000'
+      }).setOrigin(0.5);
+
+      // Stop enemy spawning and clear existing enemies
+      this.time.removeAllEvents();
+      this.enemies.clear(true, true);
+    }
   });
 
   // Collision between bullets and enemies
@@ -99,6 +126,21 @@ function create() {
 }
 
 function update(time, delta) {
+  // Block input if the blank room is open
+  if (isBlankRoomOpen) {
+    if (!blankRoomWindow || blankRoomWindow.closed) {
+      isBlankRoomOpen = false;
+      blankRoomWindow = null;
+
+      // Wipe enemies and reposition the player in the center
+      this.enemies.clear(true, true);
+      player.sprite.setPosition(window.innerWidth / 2, window.innerHeight / 2);
+      spawnEnemies(this); // Restart enemy spawning
+    } else {
+      return; // Pause main scene updates while room is open
+    }
+  }
+
   // Update the player
   player.update(time, mousePointer, bullets, lastFired);
 
