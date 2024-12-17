@@ -1,8 +1,17 @@
+// player.js
 class Player {
   constructor(scene, x, y) {
     this.scene = scene;
     this.sprite = scene.physics.add.sprite(x, y, 'player');
     this.sprite.setCollideWorldBounds(true);
+
+    // Health and health text
+    this.health = 4;
+    this.healthText = scene.add.text(x, y - 25, this.health, {
+      fontSize: '16px',
+      color: '#ffffff',
+      align: 'center'
+    }).setOrigin(0.5, 0.5);
 
     // WASD input
     this.keys = scene.input.keyboard.addKeys({
@@ -10,6 +19,11 @@ class Player {
       A: Phaser.Input.Keyboard.KeyCodes.A,
       S: Phaser.Input.Keyboard.KeyCodes.S,
       D: Phaser.Input.Keyboard.KeyCodes.D
+    });
+
+    // Mouse input
+    this.scene.input.on('pointerdown', () => {
+      this.shootBullet();
     });
   }
 
@@ -28,11 +42,12 @@ class Player {
       this.sprite.x, this.sprite.y, mousePointer.worldX, mousePointer.worldY
     );
     this.sprite.rotation = angle + Math.PI / 2;
+  }
 
-    // Shooting
-    if (mousePointer.isDown && time > lastFired) {
-      Bullet.shoot(this.scene, this.sprite.x, this.sprite.y, angle, bullets);
-      lastFired = time + 200; // Fire rate
-    }
+  shootBullet() {
+    const angle = Phaser.Math.Angle.Between(
+      this.sprite.x, this.sprite.y, mousePointer.worldX, mousePointer.worldY
+    );
+    Bullet.shoot(this.scene, this.sprite.x, this.sprite.y, angle, bullets);
   }
 }

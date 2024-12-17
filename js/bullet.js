@@ -1,3 +1,4 @@
+// bullet.js
 class Bullet {
   static shoot(scene, x, y, angle, bullets) {
     let bullet = bullets.get();
